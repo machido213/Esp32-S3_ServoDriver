@@ -1,0 +1,43 @@
+{
+	"name": "ESP-IDF",
+	"build": {
+		"dockerfile": "Dockerfile"
+	},
+	"runArgs": [
+		"--privileged"
+	],
+	"customizations": {
+		"vscode": {
+			"settings": {
+				"terminal.integrated.defaultProfile.linux": "bash",
+				"idf.espIdfPath": "/opt/esp/idf",
+				"idf.toolsPath": "/opt/esp",
+				"idf.gitPath": "/usr/bin/git",
+                // 讓 ESP-IDF 插件知道這是 S3
+                "idf.adapterTargetName": "esp32s3", 
+                "idf.flashType": "UART"
+			},
+			"extensions": [
+				"espressif.esp-idf-extension",
+                // 這個插件有時候能幫忙看 Serial，非必要但好用
+				"ms-vscode.vscode-serial-monitor" 
+			]
+		}
+	}
+	// // Pre-configure ESP-IDF extension
+	// "settings": {
+	// 	"idf.showOnboardingOnInit": false,
+	// 	"idf.toolsPath": "/opt/esp",
+	// 	"idf.espIdfPath": "/opt/esp/idf",
+	// 	"terminal.integrated.shell.linux": "/bin/bash"
+	// },
+	// // Install relevant extensions in the dev container
+	// "extensions": [
+	// 	"espressif.esp-idf-extension",
+	// 	"ms-vscode.cmake-tools",
+	// 	"ms-vscode.cpptools"
+	// ],
+	// "userEnvProbe": "loginInteractiveShell"
+	
+	
+}

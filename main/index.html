@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang='zh-TW'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <title>ESP32-S3 Servo Dashboard</title>
+    <style>
+        /* 全局樣式：暗黑工業風 */
+        body { background-color: #121212; color: #e0e0e0; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; text-align: center; }
+        h2 { color: #00bfff; margin-bottom: 20px; letter-spacing: 1px; }
+        
+        /* 容器排版 */
+        .dashboard { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; max-width: 1400px; margin: auto; }
+        
+        /* 卡片通用樣式 */
+        .card { background: #1e1e1e; padding: 15px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.5); border: 1px solid #333; text-align: left; }
+        .card-header { border-bottom: 1px solid #333; padding-bottom: 8px; margin-bottom: 10px; font-weight: bold; color: #00bfff; display: flex; justify-content: space-between; align-items: center; }
+        
+        /* 系統控制區 */
+        .sys-card { flex: 1 1 350px; display: flex; flex-direction: column; gap: 10px; }
+        .control-row { display: flex; align-items: center; justify-content: space-between; background: #252525; padding: 10px; border-radius: 5px; margin-bottom: 5px; }
+        
+        /* 燈號 */
+        .indicator { display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: #444; border: 2px solid #555; margin-right: 5px; }
+        .indicator.on { background: #00ff00; box-shadow: 0 0 8px #00ff00; }
+        .indicator.off { background: #555; }
+        .indicator.alert { background: #ff0000; box-shadow: 0 0 8px #ff0000; }
+        
+        /* 按鈕優化 */
+        button { padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; color: white; transition: 0.2s; font-size: 13px; }
+        button:hover { opacity: 0.8; filter: brightness(1.2); }
+        .btn-start { background: #2196F3; }
+        .btn-stop { background: #f44336; }
+        .btn-run { background: #4CAF50; width: 100%; margin-top:5px;}
+        .btn-ota { background: #9C27B0; width: 100%; margin-top: 5px; }
+        .btn-fill { background: #444; color: #bbb; font-size: 11px; padding: 5px 10px; }
+        
+        /* 輸入框 */
+        input[type=range] { width: 100px; vertical-align: middle; }
+        input[type=text], input[type=number], select { background: #333; border: 1px solid #444; color: #fff; padding: 6px; border-radius: 3px; text-align: center; }
+        input[type=text] { text-align: left; width: 100%; box-sizing: border-box; }
+
+        /* 馬達網格 */
+        .motor-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; width: 100%; margin-top: 20px; }
+        .motor-card { background: #1e1e1e; padding: 10px; border: 1px solid #333; border-radius: 5px; }
+        .motor-status { font-size: 10px; padding: 2px 6px; border-radius: 3px; background: #333; color: #bbb; float: right; }
+        .motor-status.running { background: #4CAF50; color: #fff; }
+        
+        /* 單行 JSON */
+        .json-input { width: 100%; background: #111; color: #0f0; border: 1px solid #444; padding: 5px; font-family: monospace; font-size: 12px; box-sizing: border-box; }
+    </style>
+</head>
+<body>
+    <h2>⚙️ ESP32-S3 工控儀表板</h2>
+    
+    <div class='dashboard'>
+        
+        <!-- 左側：環境與 IO 監控 -->
+        <div class='card sys-card'>
+            <div class='card-header'>📡 狀態監控 (Input Monitor)</div>
+            
+            <div class='control-row'>
+                <span>🔴 停止按鈕 (NC)</span>
+                <div><span id='led_stop' class='indicator'></span> <span id='txt_stop' style="font-size:12px; color:#888">--</span></div>
+            </div>
+            <div class='control-row'>
+                <span>🟢 接觸器回饋 (NO)</span>
+                <div><span id='led_feedback' class='indicator'></span> <span id='txt_feedback' style="font-size:12px; color:#888">--</span></div>
+            </div>
+            <div class='control-row'>
+                <span>🌡️ 機箱溫度</span>
+                <span style="color:#00bfff; font-weight:bold; font-size:18px"><span id='val_temp'>--</span> °C</span>
+            </div>
+            <div class='control-row'>
+                <span>🌀 散熱風扇</span>
+                <div>
+                    <input type="range" min="0" max="255" value="0" onchange="c('/api/fan?val='+this.value)">
+                    <span style="font-size:12px; color:#aaa">PWM</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 中間：遠端操作 & OTA -->
+        <div class='card sys-card'>
+            <div class='card-header'>🎮 遠端操作 (Remote Control)</div>
+            
+            <div class='control-row'>
+                <span>系統電源</span>
+                <div>
+                    <button class='btn-start' onclick="c('/api/relay?type=start&state=1')">啟動</button>
+                    <button class='btn-stop' onclick="c('/api/relay?type=cutoff&state=1')">斷電</button>
+                </div>
+            </div>
+            
+            <div class='control-row'>
+                <span>伺服始能</span>
+                <div>
+                    <button class='btn-start' style="background:#009688" onclick="c('/api/relay?type=enable&state=1')">ON</button>
+                    <button class='btn-stop' style="background:#607D8B" onclick="c('/api/relay?type=enable&state=0')">OFF</button>
+                </div>
+            </div>
+
+            <!-- OTA 區域 -->
+            <hr style="border-color: #333; margin: 10px 0; width: 100%;">
+            <div class='card-header' style="border:none; margin-bottom:0">🚀 OTA 韌體更新</div>
+            
+            <div style="background:#252525; padding:10px; border-radius:5px;">
+                <div style="margin-bottom:5px; font-size:12px; color:#aaa">韌體來源網址 (.bin):</div>
+                <input type='text' id='ota_url' value='https://github.com/machido213/Esp32-S3_Controller/releases/latest/download/Esp32-S3_ServoDriver.bin'>
+                
+                <div style="margin-top:8px; display:flex; gap:10px; justify-content:center;">
+                    <button class='btn-fill' onclick="fillGithub()">GitHub (Latest)</button>
+                    <button class='btn-fill' onclick="fillLocal()">Local (Python)</button>
+                </div>
+
+                <button class='btn-ota' onclick='startOTA()'>立即開始更新</button>
+                <div id='ota_status' style='font-size:12px; color:#bbb; margin-top:5px; text-align:center; font-weight:bold;'></div>
+            </div>
+        </div>
+
+        <!-- 右側：JSON 數據 -->
+        <div class='card' style="flex: 1 1 100%; max-width: 100%;">
+            <div style="font-size:12px; color:#aaa; margin-bottom:5px">System Raw Data (JSON)</div>
+            <input type="text" id="json_output" class="json-input" readonly>
+        </div>
+    </div>
+
+    <!-- 下方：7 軸馬達控制 -->
+    <div class='motor-grid' id='motor_container'></div>
+
+    <script>
+        // 1. 設定 OTA 預設網址
+        const GITHUB_URL = "https://github.com/machido213/Esp32-S3_Controller/releases/latest/download/Esp32-S3_ServoDriver.bin";
+        const LOCAL_URL  = "http://192.168.2.100:8000/Esp32-S3_ServoDriver.bin"; // 假設你的電腦 IP 是這個，開發時可修改
+
+        // 2. 初始化馬達卡片
+        const AXIS_COUNT = 7;
+        let html = '';
+        for(let i=0; i<AXIS_COUNT; i++) {
+            html += `
+            <div class='motor-card'>
+                <div style="margin-bottom:5px">
+                    <span style="color:#00bfff; font-weight:bold">Axis ${i+1}</span>
+                    <span id='tag_${i}' class='motor-status'>IDLE</span>
+                </div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px;">
+                    <label style="font-size:11px; color:#aaa">Steps</label> <label style="font-size:11px; color:#aaa">Hz</label>
+                    <input type='number' id='s_${i}' value='1000'> <input type='number' id='f_${i}' value='1000'>
+                </div>
+                <div style="margin-top:5px; display:flex; gap:5px">
+                    <select id='d_${i}' style="flex:1"><option value='1'>CW</option><option value='0'>CCW</option></select>
+                    <button class='btn-stop' style="width:30px; padding:2px" onclick="c('/api/motor/stop?axis=${i}')">■</button>
+                </div>
+                <button class='btn-run' onclick='runMotor(${i})'>RUN ▶</button>
+            </div>`;
+        }
+        document.getElementById('motor_container').innerHTML = html;
+
+        // 3. 函式庫
+        function c(u){ fetch(u, {method:'POST'}); }
+        
+        function runMotor(i) {
+            let s = document.getElementById(`s_${i}`).value;
+            let f = document.getElementById(`f_${i}`).value;
+            let d = document.getElementById(`d_${i}`).value;
+            c(`/api/motor?axis=${i}&steps=${s}&freq=${f}&dir=${d}`);
+        }
+
+        // 快速填入網址
+        function fillGithub() { document.getElementById('ota_url').value = GITHUB_URL; }
+        function fillLocal() { document.getElementById('ota_url').value = LOCAL_URL; }
+
+        function startOTA() {
+            const url = document.getElementById('ota_url').value;
+            if(!url) { alert('請輸入網址'); return; }
+            if(!confirm("確定要更新韌體嗎？ ESP32 將會重啟。")) return;
+
+            document.getElementById('ota_status').innerText = '⏳ 下載更新中，請勿斷電...';
+            document.getElementById('ota_status').style.color = '#00bfff';
+            
+            fetch('/ota', {
+                method: 'POST', 
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({url: url})
+            })
+            .then(r => r.text())
+            .then(t => {
+                document.getElementById('ota_status').innerText = 'System Response: ' + t;
+                if(t.includes("Started")) {
+                    document.getElementById('ota_status').style.color = '#4CAF50';
+                } else {
+                    document.getElementById('ota_status').style.color = '#f44336';
+                }
+            })
+            .catch(e => {
+                document.getElementById('ota_status').innerText = 'Error: ' + e;
+                document.getElementById('ota_status').style.color = '#f44336';
+            });
+        }
+
+        // 4. 定時更新狀態
+        setInterval(() => {
+            fetch('/status').then(r=>r.json()).then(d => {
+                document.getElementById('json_output').value = JSON.stringify(d);
+                document.getElementById('val_temp').innerText = d.temp;
+
+                // 燈號邏輯
+                let isStopPressed = (d.btn_stop === 0);
+                document.getElementById('led_stop').className = isStopPressed ? 'indicator alert' : 'indicator off';
+                document.getElementById('txt_stop').innerText = isStopPressed ? 'PRESSED' : 'RELEASED';
+
+                let isEngaged = (d.feedback === 0);
+                document.getElementById('led_feedback').className = isEngaged ? 'indicator on' : 'indicator off';
+                document.getElementById('txt_feedback').innerText = isEngaged ? 'ENGAGED' : 'OPEN';
+
+                if(d.motors) {
+                    d.motors.forEach((m, i) => {
+                        let tag = document.getElementById(`tag_${i}`);
+                        tag.className = m.run ? 'motor-status running' : 'motor-status';
+                        tag.innerText = m.run ? 'RUNNING' : 'IDLE';
+                    });
+                }
+            });
+        }, 500);
+    </script>
+</body>
+</html>
