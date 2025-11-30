@@ -19,6 +19,9 @@
 /workspaces/Esp32-S3_ServoDriver/build/CMakeFiles/dfu-flash.dir
 /workspaces/Esp32-S3_ServoDriver/build/CMakeFiles/uf2.dir
 /workspaces/Esp32-S3_ServoDriver/build/CMakeFiles/uf2-app.dir
+/workspaces/Esp32-S3_ServoDriver/build/CMakeFiles/spiffs_storage_bin.dir
+/workspaces/Esp32-S3_ServoDriver/build/CMakeFiles/storage-flash.dir
+/workspaces/Esp32-S3_ServoDriver/build/CMakeFiles/encrypted-storage-flash.dir
 /workspaces/Esp32-S3_ServoDriver/build/CMakeFiles/edit_cache.dir
 /workspaces/Esp32-S3_ServoDriver/build/CMakeFiles/rebuild_cache.dir
 /workspaces/Esp32-S3_ServoDriver/build/CMakeFiles/list_install_components.dir
