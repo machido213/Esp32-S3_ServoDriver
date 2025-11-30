@@ -1,7 +1,7 @@
 {
     "version":            "1.2",
     "project_name":       "ESP32-S3_ServoDriver",
-    "project_version":    "V0.0.1-1-g3c07a63-dirty",
+    "project_version":    "V0.0.1-2-g7462407-dirty",
     "project_path":       "/workspaces/Esp32-S3_ServoDriver",
     "idf_path":           "/opt/esp/idf",
     "build_dir":          "/workspaces/Esp32-S3_ServoDriver/build",

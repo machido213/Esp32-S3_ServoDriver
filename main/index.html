@@ -29,20 +29,31 @@
         /* 按鈕優化 */
         button { padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; color: white; transition: 0.2s; font-size: 13px; }
         button:hover { opacity: 0.8; filter: brightness(1.2); }
+        button:active { transform: scale(0.98); }
+
         .btn-start { background: #2196F3; }
         .btn-stop { background: #f44336; }
-        .btn-run { background: #4CAF50; width: 100%; margin-top:5px;}
+        .btn-run { background: #4CAF50; width: 100%; margin-top:5px; padding: 10px; font-size: 14px;}
         .btn-ota { background: #9C27B0; width: 100%; margin-top: 5px; }
         .btn-fill { background: #444; color: #bbb; font-size: 11px; padding: 5px 10px; }
-        
-        /* 輸入框 */
+
+        /* 點動按鈕群組 */
+        .jog-group { display: flex; gap: 5px; margin-top: 5px; }
+        .btn-jog { flex: 1; padding: 10px; font-size: 14px; background: #37474F; border: 1px solid #555; }
+        .btn-jog:active { background: #00bfff; border-color: #00bfff; }
+
+        /* 輸入框修復：確保在 Grid 內不穿模 */
         input[type=range] { width: 100px; vertical-align: middle; }
-        input[type=text], input[type=number], select { background: #333; border: 1px solid #444; color: #fff; padding: 6px; border-radius: 3px; text-align: center; }
-        input[type=text] { text-align: left; width: 100%; box-sizing: border-box; }
+        input[type=text], input[type=number], select { 
+            background: #333; border: 1px solid #444; color: #fff; padding: 6px; border-radius: 3px; text-align: center;
+            width: 100%;             /* 強制填滿容器 */
+            box-sizing: border-box;  /* 讓 padding 不會撐大寬度 */
+            min-width: 0;            /* 防止 Grid 溢出 */
+        }
 
         /* 馬達網格 */
-        .motor-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; width: 100%; margin-top: 20px; }
-        .motor-card { background: #1e1e1e; padding: 10px; border: 1px solid #333; border-radius: 5px; }
+        .motor-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; width: 100%; margin-top: 20px; }
+        .motor-card { background: #1e1e1e; padding: 15px; border: 1px solid #333; border-radius: 5px; display: flex; flex-direction: column; gap: 8px;}
         .motor-status { font-size: 10px; padding: 2px 6px; border-radius: 3px; background: #333; color: #bbb; float: right; }
         .motor-status.running { background: #4CAF50; color: #fff; }
         
@@ -131,7 +142,7 @@
     <script>
         // 1. 設定 OTA 預設網址
         const GITHUB_URL = "https://github.com/machido213/Esp32-S3_ServoDriver/releases/latest/download/Esp32-S3_ServoDriver.bin";
-        const LOCAL_URL  = "http://192.168.2.100:8000/Esp32-S3_ServoDriver.bin"; // 假設你的電腦 IP 是這個，開發時可修改
+        const LOCAL_URL  = "http://192.168.2.100:8000/Esp32-S3_ServoDriver.bin";
 
         // 2. 初始化馬達卡片
         const AXIS_COUNT = 7;
@@ -139,19 +150,43 @@
         for(let i=0; i<AXIS_COUNT; i++) {
             html += `
             <div class='motor-card'>
-                <div style="margin-bottom:5px">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
                     <span style="color:#00bfff; font-weight:bold">Axis ${i+1}</span>
                     <span id='tag_${i}' class='motor-status'>IDLE</span>
                 </div>
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px;">
-                    <label style="font-size:11px; color:#aaa">Steps</label> <label style="font-size:11px; color:#aaa">Hz</label>
-                    <input type='number' id='s_${i}' value='1000'> <input type='number' id='f_${i}' value='1000'>
+                
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+                    <div>
+                        <label style="font-size:10px; color:#aaa; display:block">Steps</label>
+                        <input type='number' id='s_${i}' value='1000'>
+                    </div>
+                    <div>
+                        <label style="font-size:10px; color:#aaa; display:block">Hz</label>
+                        <input type='number' id='f_${i}' value='1000'>
+                    </div>
                 </div>
-                <div style="margin-top:5px; display:flex; gap:5px">
-                    <select id='d_${i}' style="flex:1"><option value='1'>CW</option><option value='0'>CCW</option></select>
-                    <button class='btn-stop' style="width:30px; padding:2px" onclick="c('/api/motor/stop?axis=${i}')">■</button>
+
+                <div style="display:flex; gap:5px; margin-top:2px;">
+                    <!-- 方向選擇 (保留給單次 RUN 使用) -->
+                    <select id='d_${i}' style="flex:2"><option value='1'>CW (正轉)</option><option value='0'>CCW (反轉)</option></select>
+                    <button class='btn-stop' style="flex:1" onclick="c('/api/motor/stop?axis=${i}')">STOP</button>
                 </div>
-                <button class='btn-run' onclick='runMotor(${i})'>RUN ▶</button>
+                
+                <!-- 單次執行按鈕 -->
+                <button class='btn-run' onclick='runMotor(${i})'>RUN (執行設定)</button>
+
+                <!-- 點動按鈕 (按住不放) -->
+                <div class="jog-group">
+                    <button class="btn-jog" 
+                        onmousedown="jogStart(${i}, 1)" onmouseup="jogStop(${i})" onmouseleave="jogStop(${i})"
+                        ontouchstart="jogStart(${i}, 1)" ontouchend="jogStop(${i})"
+                    >◀ 正轉</button>
+                    
+                    <button class="btn-jog" 
+                        onmousedown="jogStart(${i}, 0)" onmouseup="jogStop(${i})" onmouseleave="jogStop(${i})"
+                        ontouchstart="jogStart(${i}, 0)" ontouchend="jogStop(${i})"
+                    >反轉 ▶</button>
+                </div>
             </div>`;
         }
         document.getElementById('motor_container').innerHTML = html;
@@ -159,11 +194,29 @@
         // 3. 函式庫
         function c(u){ fetch(u, {method:'POST'}); }
         
+        // 一般單次執行 (讀取 Select 的方向)
         function runMotor(i) {
             let s = document.getElementById(`s_${i}`).value;
             let f = document.getElementById(`f_${i}`).value;
             let d = document.getElementById(`d_${i}`).value;
             c(`/api/motor?axis=${i}&steps=${s}&freq=${f}&dir=${d}`);
+        }
+
+        // 點動控制：按下開始
+        function jogStart(i, dir) {
+            // 使用輸入框的 Steps 和 Freq (若需無限轉動，使用者可將 Steps 設很大)
+            let s = document.getElementById(`s_${i}`).value;
+            let f = document.getElementById(`f_${i}`).value;
+            
+            // 防止因為按下時觸發反白
+            if(window.getSelection) window.getSelection().removeAllRanges();
+            
+            c(`/api/motor?axis=${i}&steps=${s}&freq=${f}&dir=${dir}`);
+        }
+
+        // 點動控制：放開停止
+        function jogStop(i) {
+            c(`/api/motor/stop?axis=${i}`);
         }
 
         // 快速填入網址
@@ -216,8 +269,10 @@
                 if(d.motors) {
                     d.motors.forEach((m, i) => {
                         let tag = document.getElementById(`tag_${i}`);
-                        tag.className = m.run ? 'motor-status running' : 'motor-status';
-                        tag.innerText = m.run ? 'RUNNING' : 'IDLE';
+                        if(tag) {
+                            tag.className = m.run ? 'motor-status running' : 'motor-status';
+                            tag.innerText = m.run ? 'RUNNING' : 'IDLE';
+                        }
                     });
                 }
             });
