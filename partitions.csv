@@ -1,0 +1,15 @@
+# Name,   Type, SubType, Offset,  Size, Flags
+# 系統必要區
+nvs,      data, nvs,     ,        0x4000,
+otadata,  data, ota,     ,        0x2000,
+phy_init, data, phy,     ,        0x1000,
+
+# 除錯區
+coredump, data, coredump,,        64K,
+
+# OTA 應用程式區 (4MB x 2)
+ota_0,    app,  ota_0,   ,        4M,
+ota_1,    app,  ota_1,   ,        4M,
+
+# 檔案儲存區 (填入具體數值 7M，解決報錯)
+storage,  data, spiffs,  ,        7M,

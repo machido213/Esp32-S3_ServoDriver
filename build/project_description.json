@@ -1,7 +1,7 @@
 {
     "version":            "1.2",
     "project_name":       "ESP32-S3_ServoDriver",
-    "project_version":    "1",
+    "project_version":    "V0.0.1-1-g3c07a63-dirty",
     "project_path":       "/workspaces/Esp32-S3_ServoDriver",
     "idf_path":           "/opt/esp/idf",
     "build_dir":          "/workspaces/Esp32-S3_ServoDriver/build",
@@ -888,14 +888,14 @@
             "target": "___idf_esp_psram",
             "prefix": "idf",
             "dir": "/opt/esp/idf/components/esp_psram",
-            "type": "CONFIG_ONLY",
+            "type": "LIBRARY",
             "lib": "__idf_esp_psram",
             "reqs": [],
             "priv_reqs": [ "heap", "spi_flash", "esp_mm" ],
             "managed_reqs": [],
             "managed_priv_reqs": [],
-            "file": "",
-            "sources": [],
+            "file": "/workspaces/Esp32-S3_ServoDriver/build/esp-idf/esp_psram/libesp_psram.a",
+            "sources": [ "/opt/esp/idf/components/esp_psram/esp_psram.c", "/opt/esp/idf/components/esp_psram/mmu_psram_flash.c", "/opt/esp/idf/components/esp_psram/esp32s3/esp_psram_impl_octal.c" ],
             "include_dirs": [ "include" ]
         },
         "esp_ringbuf": {
@@ -1240,7 +1240,7 @@
             "managed_reqs": [],
             "managed_priv_reqs": [],
             "file": "/workspaces/Esp32-S3_ServoDriver/build/esp-idf/newlib/libnewlib.a",
-            "sources": [ "/opt/esp/idf/components/newlib/abort.c", "/opt/esp/idf/components/newlib/assert.c", "/opt/esp/idf/components/newlib/heap.c", "/opt/esp/idf/components/newlib/flockfile.c", "/opt/esp/idf/components/newlib/locks.c", "/opt/esp/idf/components/newlib/poll.c", "/opt/esp/idf/components/newlib/pthread.c", "/opt/esp/idf/components/newlib/random.c", "/opt/esp/idf/components/newlib/getentropy.c", "/opt/esp/idf/components/newlib/reent_init.c", "/opt/esp/idf/components/newlib/newlib_init.c", "/opt/esp/idf/components/newlib/syscalls.c", "/opt/esp/idf/components/newlib/termios.c", "/opt/esp/idf/components/newlib/stdatomic.c", "/opt/esp/idf/components/newlib/time.c", "/opt/esp/idf/components/newlib/sysconf.c", "/opt/esp/idf/components/newlib/realpath.c", "/opt/esp/idf/components/newlib/scandir.c", "/opt/esp/idf/components/newlib/port/esp_time_impl.c" ],
+            "sources": [ "/opt/esp/idf/components/newlib/abort.c", "/opt/esp/idf/components/newlib/assert.c", "/opt/esp/idf/components/newlib/heap.c", "/opt/esp/idf/components/newlib/flockfile.c", "/opt/esp/idf/components/newlib/locks.c", "/opt/esp/idf/components/newlib/poll.c", "/opt/esp/idf/components/newlib/pthread.c", "/opt/esp/idf/components/newlib/random.c", "/opt/esp/idf/components/newlib/getentropy.c", "/opt/esp/idf/components/newlib/reent_init.c", "/opt/esp/idf/components/newlib/newlib_init.c", "/opt/esp/idf/components/newlib/syscalls.c", "/opt/esp/idf/components/newlib/termios.c", "/opt/esp/idf/components/newlib/stdatomic.c", "/opt/esp/idf/components/newlib/time.c", "/opt/esp/idf/components/newlib/sysconf.c", "/opt/esp/idf/components/newlib/realpath.c", "/opt/esp/idf/components/newlib/scandir.c", "/opt/esp/idf/components/newlib/port/xtensa/stdatomic_s32c1i.c", "/opt/esp/idf/components/newlib/port/esp_time_impl.c" ],
             "include_dirs": [ "platform_include" ]
         },
         "nvs_flash": {

@@ -18,7 +18,7 @@ set(HEAD_HASH)
 file(READ "/workspaces/Esp32-S3_ServoDriver/build/CMakeFiles/git-data/HEAD" HEAD_CONTENTS LIMIT 1024)
 
 string(STRIP "${HEAD_CONTENTS}" HEAD_CONTENTS)
-set(GIT_DIR "/opt/esp/idf/.git")
+set(GIT_DIR "/workspaces/Esp32-S3_ServoDriver/.git")
 # handle git-worktree
 if(EXISTS "${GIT_DIR}/commondir")
 	file(READ "${GIT_DIR}/commondir" GIT_DIR_NEW LIMIT 1024)

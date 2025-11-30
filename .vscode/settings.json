@@ -1,5 +1,5 @@
 {
-  "idf.pythonInstallPath": "/opt/esp/python_env/idf5.4_py3.12_env/bin/python",
+  "idf.pythonInstallPath": "/usr/bin/python",
   "idf.openOcdConfigs": [
     "board/esp32s3-builtin.cfg"
   ],
