@@ -1,7 +1,7 @@
 {
     "version":            "1.2",
     "project_name":       "ESP32-S3_ServoDriver",
-    "project_version":    "V0.0.1-5-g642fca7-dirty",
+    "project_version":    "V0.0.2-1-gd4cef84-dirty",
     "project_path":       "/workspaces/Esp32-S3_ServoDriver",
     "idf_path":           "/opt/esp/idf",
     "build_dir":          "/workspaces/Esp32-S3_ServoDriver/build",
@@ -1195,7 +1195,7 @@
             "managed_reqs": [],
             "managed_priv_reqs": [],
             "file": "/workspaces/Esp32-S3_ServoDriver/build/esp-idf/main/libmain.a",
-            "sources": [ "/workspaces/Esp32-S3_ServoDriver/main/main.c" ],
+            "sources": [ "/workspaces/Esp32-S3_ServoDriver/main/main.c", "/workspaces/Esp32-S3_ServoDriver/build/index.html.S" ],
             "include_dirs": [ "." ]
         },
         "mbedtls": {
